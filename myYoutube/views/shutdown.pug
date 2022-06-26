@@ -1,0 +1,260 @@
+include ./mixins/message
+doctype html
+html
+    head
+        meta(charset='utf-8')
+        title &#xCE74;&#xC6B4;&#xD2B8;&#xB2E4;&#xC6B4; &#xD0C0;&#xC774;&#xBA38;
+        meta(name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no')
+        meta(name='description' content='심플한 카운트다운 타이머로 일의 능률을 높여 보세요!')
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+        link(rel="stylesheet", href="/static/style.css")
+        //
+            [외부 라이브러리]
+            1. Bootstrap 4 (CSS만, 디자인)
+            2. Picker.js (날짜·시간 설정 다이얼로그)
+            3. EasyTimer.js (타이머)
+        link(href='https://cdn.jsdelivr.net/combine/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css,npm/pickerjs@1.2.1/dist/picker.min.css' rel='stylesheet')
+        script(src='https://cdn.jsdelivr.net/combine/npm/pickerjs@1.2.1/dist/picker.min.js,npm/easytimer.js@4.3.0/dist/easytimer.min.js')
+        style.
+            .time-picker, .values {
+            /*background-color: #2962ff;
+            border:10px solid #000*/
+            color: #000;
+            text-align: center;
+            font-size: 5rem;
+            font-weight: bold;
+            border: none;
+            margin-bottom: 2rem;
+            font-family: monospace; /* 고정폭 */
+
+            height:38vh;
+            
+            }
+            #ongoing-status, #completed-status, .values, #btn-group-2, #resume-btn {
+            display: none;
+            }
+            #ongoing-status, #completed-status, #btn-group-1, #btn-group-2 {
+            text-align: center;
+            }
+            .btn-light {
+            width: 120px;
+            margin-right: 10px;
+            color: #2962ff !important;
+            }
+            .picker-opened > .picker-dialog {
+            top: 13rem;
+            }
+            .size{
+                position:relative;
+                left:37%;
+                font-size:4rem !important;
+                color:#808080 !important;
+            }
+            .make{
+                color:red !important;
+                opacity:0.6;
+
+            }
+    include ./partials/header
+    main(role='main')
+        // 설정한 카운트다운 시간 표시
+        input.form-control.time-picker.size(type='text' value='00:01:00')
+        // 카운트다운 '진행 중' 표시
+        #ongoing-status
+            .spinner-border.text-light.make(role='status')
+        // 카운트다운 완료 표시
+        #completed-status
+            .spinner-grow.text-light.make(role='status')
+        // 카운트다운 표시
+        .form-control.values
+        // 버튼 그룹 1
+        #btn-group-1
+            button#set-btn.btn.btn-light.rounded-pill
+                | &#xC2DC;&#xAC04; &#xC124;&#xC815;
+            button#start-btn.btn.btn-light.rounded-pill
+                | &#xC2DC;&#xC791;
+        // 버튼 그룹 2
+        #btn-group-2
+            button#cancel-btn.btn.btn-light.rounded-pill
+                | &#xCDE8;&#xC18C;
+            button#pause-btn.btn.btn-light.rounded-pill
+                | &#xC77C;&#xC2DC; &#xC815;&#xC9C0;
+            button#resume-btn.btn.btn-light.rounded-pill
+                | &#xC7AC;&#xAC1C;
+    include ./partials/footer
+    script.
+        const timePicker = document.querySelector('.time-picker');
+        const values = document.querySelector('.values');
+        const btnGroup1 = document.querySelector('#btn-group-1');
+        const setBtn = document.querySelector('#set-btn');
+        const startBtn = document.querySelector('#start-btn');
+        const btnGroup2 = document.querySelector('#btn-group-2');
+        const cancelBtn = document.querySelector('#cancel-btn');
+        const pauseBtn = document.querySelector('#pause-btn');
+        const resumeBtn = document.querySelector('#resume-btn');
+        const ongoingStatus = document.querySelector('#ongoing-status');
+        const completedStatus = document.querySelector('#completed-status');
+        let time;
+       
+        let started=false;
+        let permit;
+        
+        window.onload = function () {
+            console.log('a');
+            if(localStorage.getItem('permit') === 'false'){
+                console.log('permit false')
+                alert('time finished!!')
+                document.location = 'http://planpapers.com/';
+            }
+        };
+        
+
+            //- if(localStorage.getItem('started')){
+            //-     time = localStorage.getItem('time');
+            //-     var interval = setInterval(function() {
+            //-         time=time-1;
+            //-         localStorage.setItem('time',time);
+            //-         if(time===0){
+            //-             //stop function
+            //-             console.log('a');
+            //-             clearInterval(interval);
+            //-             permit=false;
+            //-             localStorage.setItem('permit',permit);
+            //-             if(confirm("time finished!!")) document.location = 'http://planpapers.com/';
+            //-             else document.location = 'http://planpapers.com/';
+                        
+            //-         }
+
+            //-     }, 1000);
+            //}
+
+
+        // 시간 설정 다이얼로그 생성
+        new Picker(timePicker, {
+        format: 'HH:mm:ss', // 시:분:초
+        text: {
+        title: '시간을 설정하세요',
+        confirm: '확인',
+        cancel: '취소'
+        },
+        });
+        // 타이머 생성
+        const timer = new easytimer.Timer();
+        // 타이머 이벤트 리스너 등록
+        timer.addEventListener('secondsUpdated', () => {
+        values.textContent = timer.getTimeValues().toString();
+        });
+        timer.addEventListener('started', () => {
+        values.textContent = timer.getTimeValues().toString();
+        });
+        timer.addEventListener('reset', () => {
+        values.textContent = timer.getTimeValues().toString();
+        });
+        timer.addEventListener('targetAchieved', () => {   //finish
+        values.textContent = 'time finished!'; // 카운트다운 완료
+        ongoingStatus.style.display = 'none';
+        completedStatus.style.display = 'block';
+        btnGroup2.style.display = 'none';
+        btnGroup1.style.display = 'block';
+   
+        });
+        // 버튼 이벤트 리스너 등록
+        /**
+        * ['시간 설정' 버튼]
+        *   경우1. 초기 화면에서
+        *   경우2. 취소 후
+        *   경우3. 완료 후
+        */
+        setBtn.addEventListener('click', () => {
+        if (completedStatus.style.display === 'block') {
+        values.style.display = 'none';
+        timePicker.style.display = 'block';
+        completedStatus.style.display = 'none';
+        }
+        timePicker.click();
+        });
+        /**
+        * [시작 버튼]
+        *   경우1. 초기 화면에서
+        *   경우2. 취소 후
+        *   경우3. 완료 후
+        */
+
+
+
+        //start ------------------------------------------
+        startBtn.addEventListener('click', () => {
+        timer.start({countdown: true, startValues: {seconds: toSeconds(timePicker.value)}});
+        if (completedStatus.style.display === 'block') {
+        completedStatus.style.display = 'none';
+        } else {
+        timePicker.style.display = 'none';
+        values.style.display = 'block';
+        }
+        ongoingStatus.style.display = 'block';
+        btnGroup1.style.display = 'none';
+        btnGroup2.style.display = 'block';
+
+
+        started=true;
+        localStorage.setItem('started',started);
+
+        permit=true;
+        localStorage.setItem('permit',permit);
+
+        var interval = setInterval(function() {
+            time=time-1;
+            localStorage.setItem('time',time);
+            if(Number(localStorage.getItem('time'))<0){
+                clearInterval(interval);
+                localStorage.setItem('permit',"false");
+                console.log('end');
+                if(confirm("time finished!!")) document.location = 'http://planpapers.com/';
+                else document.location = 'http://planpapers.com/';
+            }   
+        }, 1000);
+        
+
+        });
+        // 취소 버튼
+        cancelBtn.addEventListener('click', () => {
+        // '일시 정지 > 취소 > 시작'인 경우
+        if (timer.isPaused()) {
+        resumeBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
+        }
+        timer.reset();
+        timer.stop();
+        values.style.display = 'none';
+        timePicker.style.display = 'block';
+        ongoingStatus.style.display = 'none';
+        btnGroup2.style.display = 'none';
+        btnGroup1.style.display = 'block';
+        });
+        // '일시 정지' 버튼
+        pauseBtn.addEventListener('click', () => {
+        timer.pause();
+        ongoingStatus.style.display = 'none';
+        pauseBtn.style.display = 'none';
+        resumeBtn.style.display = 'inline-block';
+        });
+        // 재개 버튼
+        resumeBtn.addEventListener('click', () => {
+        timer.start();
+        ongoingStatus.style.display = 'block';
+        resumeBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
+        });
+        // '시:분:초'를 초로 계산하고, 그 결과값을 반환한다.
+        function toSeconds(hhmmss) {
+        const arr = hhmmss.split(':');
+        time = Number((+arr[0]) * 60 * 60 + (+arr[1]) * 60 + (+arr[2]))
+        localStorage.setItem('time',time);
+        return (+arr[0]) * 60 * 60 + (+arr[1]) * 60 + (+arr[2]);
+        }
+        if(Number(localStorage.getItem('time'))===0){
+            console.log('end');
+                
+        }
+        
+        

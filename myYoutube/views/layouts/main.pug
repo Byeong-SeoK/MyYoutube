@@ -1,0 +1,68 @@
+//공통되는 코드가 필요한 경우div
+include ../mixins/message
+doctype html
+html
+    head
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+        title #{pageTitle} | #{siteName}
+        link(rel="stylesheet", href="/static/style.css")
+    body
+        if messages.error
+            +message({
+                type:'error',
+                text:messages.error
+            })
+        else if messages.info
+            +message({
+                type:'info',
+                text:messages.info
+            })
+        else if messages.success
+            +message({
+                type:'success',
+                text:messages.success
+            })
+        include ../partials/header
+        main
+            block content
+        include ../partials/footer
+        script(src="/static/main.js")
+    script. 
+        
+        
+        window.onload = function () {
+            
+            if(localStorage.getItem('permit') === 'false'){
+                console.log('permit false');
+                setTimeout(() => {
+                    alert("time is already finished!!")
+                    document.location = 'http://planpapers.com/';
+                }, 3000);
+            }
+            
+        };
+        let time = localStorage.getItem('time');
+        if(time){
+            var interval = setInterval(function() {
+                time=time-1;
+                localStorage.setItem('time',time);
+                if(time ===10){
+                    alert('10초 남았습니다')
+                }
+
+                if(time === 1){
+                    //stop function
+                    clearInterval(interval);
+
+                    if(confirm("time finished!!")) document.location = 'http://planpapers.com/';
+                    else document.location = 'http://planpapers.com/';
+                    localStorage.setItem('permit',false);
+                }
+            }, 1000);
+            
+        }
+
+        
+        
+        
+
